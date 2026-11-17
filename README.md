@@ -56,14 +56,18 @@ Selected model: Logistic Regression, **test AUC ≈ 0.81**. Simple, fast and int
 ├── train.py           # trains + tunes models, saves model.bin
 ├── predict.py         # Flask web service
 ├── model.bin          # saved model
+├── sample.json        # example request body
+├── screenshots/       # proof of working service and Docker
 ├── requirements.txt
 └── Dockerfile
 ```
 Architecture: `data → train.py → model.bin → predict.py (Flask/gunicorn) → /predict`
 
 ## 6. How to run locally
+Requires Python 3.10+ (the Docker image uses Python 3.12).
 ```bash
-git clone <your-repo-url> && cd diabetes-prediction
+git clone https://github.com/shahipraphullkr/ml-zoomcamp-midterm-project.git
+cd ml-zoomcamp-midterm-project
 python -m venv venv
 source venv/bin/activate          # Windows: venv\Scripts\activate
 pip install -r requirements.txt
@@ -76,12 +80,13 @@ Notebook extra packages: `pip install jupyter matplotlib seaborn`, then `jupyter
 ## 7. API usage
 Health check: `curl http://localhost:9696/health`
 
-Prediction:
+Prediction (works on Linux, Mac and Windows):
 ```bash
-curl -X POST -H "Content-Type: application/json" \
-  -d '{"pregnancies": 6, "glucose": 148, "blood_pressure": 72, "skin_thickness": 35,
-       "insulin": 0, "bmi": 33.6, "diabetes_pedigree": 0.627, "age": 50}' \
-  http://localhost:9696/predict
+curl -X POST -H "Content-Type: application/json" -d @sample.json http://localhost:9696/predict
+```
+Windows PowerShell alternative:
+```powershell
+curl.exe -X POST -H "Content-Type: application/json" -d "@sample.json" http://localhost:9696/predict
 ```
 Response:
 ```json
@@ -96,14 +101,16 @@ docker run -it --rm -p 9696:9696 diabetes-prediction
 ```
 The image trains the model during the build, then serves it with gunicorn. Test with the same `curl` command.
 
-## 9. Cloud deployment (bonus)
-Deploy on Render: New → Web Service → connect this GitHub repo → Runtime: Docker → Deploy.
-Then test:
+## 9. Cloud deployment (not deployed)
+The project was not deployed to the cloud. It can be deployed with the included Dockerfile, for example on Render:
+1. Push this repo to GitHub.
+2. On render.com: New → Web Service → connect this repo.
+3. Runtime: Docker, instance type: Free, then Deploy.
+4. Test:
 ```bash
 curl https://<your-app>.onrender.com/health
+curl -X POST -H "Content-Type: application/json" -d @sample.json https://<your-app>.onrender.com/predict
 ```
-Add your URL / screenshot here: `<ADD YOUR LINK OR SCREENSHOT>`
-(Delete the service after grading to avoid costs.)
 
 ## 10. Limitations / next steps
 - Small dataset (768 rows), all female patients of Pima heritage, so it may not generalize to other populations.
@@ -112,8 +119,11 @@ Add your URL / screenshot here: `<ADD YOUR LINK OR SCREENSHOT>`
 
 ## Screenshots
 
+Health check:
 ![Health check] ![alt text](image.png)
 
+Prediction:
 ![Prediction] ![alt text](image-1.png)
 
+Docker image built and service running:
 ![Docker running] ![alt text](image-3.png)
